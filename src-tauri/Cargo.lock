@@ -679,6 +679,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "debug_print"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8f215f9b7224f49fb73256115331f677d868b34d18b65dbe4db392e6021eea90"
+
+[[package]]
 name = "deranged"
 version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1347,6 +1353,9 @@ dependencies = [
  "tauri",
  "tauri-build",
  "tauri-plugin-opener",
+ "tauri-plugin-tcp",
+ "tokio",
+ "tokio-modbus",
 ]
 
 [[package]]
@@ -3646,6 +3655,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "tauri-plugin-tcp"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5f37bcc74112c0f1ff0236cfac944a68ff560fd34b1cc20412e00e9b7abe7fd9"
+dependencies = [
+ "debug_print",
+ "lazy_static",
+ "serde",
+ "tauri",
+ "tauri-plugin",
+ "thiserror 1.0.69",
+ "tokio",
+]
+
+[[package]]
 name = "tauri-runtime"
 version = "2.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3864,9 +3888,39 @@ dependencies = [
  "bytes",
  "libc",
  "mio",
+ "parking_lot",
  "pin-project-lite",
+ "signal-hook-registry",
  "socket2",
+ "tokio-macros",
  "windows-sys 0.52.0",
+]
+
+[[package]]
+name = "tokio-macros"
+version = "2.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6e06d43f1345a3bcd39f6a56dbb7dcab2ba47e68e8ac134855e7e2bdbaf8cab8"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.101",
+]
+
+[[package]]
+name = "tokio-modbus"
+version = "0.8.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ef5d067fe05b59ef5d4f7fa37c175415eba8b7ec1e7e276dffb26862812c18e1"
+dependencies = [
+ "async-trait",
+ "byteorder",
+ "bytes",
+ "futures-util",
+ "log",
+ "smallvec",
+ "tokio",
+ "tokio-util",
 ]
 
 [[package]]

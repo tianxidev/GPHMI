@@ -22,4 +22,7 @@ tauri = { version = "2", features = [] }
 tauri-plugin-opener = "2"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
+tokio = { version = "1", features = ["full"] }
+tokio-modbus = { version = "0.8", default-features = false, features = ["tcp", "rtu"] }
+tauri-plugin-tcp = "0.1.1"
 
