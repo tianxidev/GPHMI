@@ -4,7 +4,7 @@ import { initReactI18next } from "react-i18next";
 const resources = {
   en: {
     translation: {
-      // Common
+      "app.title": "TCP Server",
       "app.version": "Version",
       "app.settings": "Settings",
       "app.save": "Save",
@@ -21,22 +21,28 @@ const resources = {
       "server.stopped": "Stopped",
       "server.start": "Start Server",
       "server.stop": "Stop Server",
-      "server.connected": "Connected",
+      "server.connected": "Connected Clients",
       "server.port": "Listen Port",
       "server.port.range": "Port range: 1-65535",
       "server.port.running": "Port cannot be changed while server is running",
 
+      // Log
+      "log.timestamp": "Timestamp",
+      "log.clear": "Clear Logs",
+
       // Clients
       "clients.title": "Connected Clients",
       "clients.address": "Address",
-      "clients.connected": "Connected",
+      "clients.connected": "Connected At",
       "clients.lastMessage": "Last Message",
       "clients.empty": "No clients connected",
+      "clients.search": "Search by address...",
+      "clients.noResults": "No matching clients found",
 
       // Protocol
-      "protocol.manager": "Protocol Manager",
+      "protocol.title": "Protocol Manager",
       "protocol.new": "New Protocol",
-      "protocol.name": "Protocol Name",
+      "protocol.name": "Name",
       "protocol.description": "Description",
       "protocol.handler": "Handler",
       "protocol.select": "Please choose a protocol",
@@ -44,16 +50,17 @@ const resources = {
         "// Example protocol handler\nfunction(data) {\n  // Process the data\n  return {\n    type: 'data',\n    value: data\n  };\n}",
       "protocol.import": "Import Protocol",
       "protocol.export": "Export Protocol",
-      "protocol.registration.type": "Registration Type",
+      "protocol.registration": "Registration",
+      "protocol.registration.type": "Type",
       "protocol.registration.active": "Active",
       "protocol.registration.passive": "Passive",
-      "protocol.registration.command": "Registration Command",
+      "protocol.registration.command": "Command",
       "protocol.registration.expectedResponse": "Expected Response",
       "protocol.registration.matchType": "Match Type",
-      "protocol.registration.content": "Content",
-      "protocol.registration.ip": "IP Address",
-      "protocol.registration.ipRange": "IP Range",
       "protocol.registration.matchPattern": "Match Pattern",
+      "protocol.registration.matchType.content": "Content",
+      "protocol.registration.matchType.ip": "IP",
+      "protocol.registration.matchType.ipRange": "IP Range",
       "protocol.registration.contentPatternPlaceholder":
         "Enter content pattern to match",
       "protocol.registration.ipPatternPlaceholder":
@@ -66,11 +73,12 @@ const resources = {
       "settings.language": "Language",
       "settings.language.en": "English",
       "settings.language.zh": "Chinese",
+      "settings.port": "Server Port",
     },
   },
   zh: {
     translation: {
-      // Common
+      "app.title": "TCP 服务器",
       "app.version": "版本",
       "app.settings": "设置",
       "app.save": "保存",
@@ -87,22 +95,28 @@ const resources = {
       "server.stopped": "已停止",
       "server.start": "启动服务器",
       "server.stop": "停止服务器",
-      "server.connected": "已连接",
+      "server.connected": "已连接客户端",
       "server.port": "监听端口",
       "server.port.range": "端口范围：1-65535",
       "server.port.running": "服务器运行时无法修改端口",
 
+      // Log
+      "log.timestamp": "时间戳",
+      "log.clear": "清除日志",
+
       // Clients
       "clients.title": "已连接客户端",
       "clients.address": "地址",
-      "clients.connected": "已连接",
+      "clients.connected": "连接时间",
       "clients.lastMessage": "最后消息",
-      "clients.empty": "没有客户端连接",
+      "clients.empty": "没有已连接的客户端",
+      "clients.search": "按地址搜索...",
+      "clients.noResults": "未找到匹配的客户端",
 
       // Protocol
-      "protocol.manager": "协议管理器",
+      "protocol.title": "协议管理器",
       "protocol.new": "新建协议",
-      "protocol.name": "协议名称",
+      "protocol.name": "名称",
       "protocol.description": "描述",
       "protocol.handler": "处理器",
       "protocol.select": "请选择一个协议",
@@ -110,16 +124,17 @@ const resources = {
         "// 协议处理器示例\nfunction(data) {\n  // 处理数据\n  return {\n    type: 'data',\n    value: data\n  };\n}",
       "protocol.import": "导入协议",
       "protocol.export": "导出协议",
-      "protocol.registration.type": "注册类型",
-      "protocol.registration.active": "主动注册",
-      "protocol.registration.passive": "被动注册",
-      "protocol.registration.command": "注册指令",
+      "protocol.registration": "注册方式",
+      "protocol.registration.type": "类型",
+      "protocol.registration.active": "主动",
+      "protocol.registration.passive": "被动",
+      "protocol.registration.command": "命令",
       "protocol.registration.expectedResponse": "预期响应",
       "protocol.registration.matchType": "匹配类型",
-      "protocol.registration.content": "内容匹配",
-      "protocol.registration.ip": "IP地址",
-      "protocol.registration.ipRange": "IP范围",
       "protocol.registration.matchPattern": "匹配模式",
+      "protocol.registration.matchType.content": "内容",
+      "protocol.registration.matchType.ip": "IP",
+      "protocol.registration.matchType.ipRange": "IP范围",
       "protocol.registration.contentPatternPlaceholder": "输入要匹配的内容模式",
       "protocol.registration.ipPatternPlaceholder":
         "输入IP地址（例如：192.168.1.100）",
@@ -131,6 +146,7 @@ const resources = {
       "settings.language": "语言",
       "settings.language.en": "英文",
       "settings.language.zh": "中文",
+      "settings.port": "服务器端口",
     },
   },
 };

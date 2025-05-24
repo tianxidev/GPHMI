@@ -1,4 +1,4 @@
-import { Trash2, Download, Upload, FileCode } from "lucide-react";
+import { Trash2, Download, FileCode, X, FileUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Drawer,
@@ -10,7 +10,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import Editor from "@monaco-editor/react";
 import { useTranslation } from "react-i18next";
 
@@ -43,6 +43,266 @@ interface ProtocolManagerProps {
   onUpdateProtocol: (protocol: Protocol) => void;
 }
 
+interface ProtocolEditorProps {
+  protocol: Protocol;
+  onSave: (protocol: Protocol) => void;
+  onClose: () => void;
+}
+
+function ProtocolEditor({ protocol, onSave, onClose }: ProtocolEditorProps) {
+  const { t } = useTranslation();
+  const [editedProtocol, setEditedProtocol] = useState<Protocol>(protocol);
+
+  const handleSave = () => {
+    onSave(editedProtocol);
+    onClose();
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h3 className="text-lg font-medium">{t("protocol.edit")}</h3>
+        <Button variant="ghost" size="icon" onClick={onClose}>
+          <X className="w-4 h-4" />
+        </Button>
+      </div>
+
+      <div className="space-y-1">
+        <Label>{t("protocol.name")}</Label>
+        <Input
+          value={editedProtocol.name}
+          onChange={(e) =>
+            setEditedProtocol((prev) => ({ ...prev, name: e.target.value }))
+          }
+        />
+      </div>
+
+      <div className="space-y-1">
+        <Label>{t("protocol.description")}</Label>
+        <Input
+          value={editedProtocol.description}
+          onChange={(e) =>
+            setEditedProtocol((prev) => ({ ...prev, description: e.target.value }))
+          }
+        />
+      </div>
+
+      <div className="space-y-1">
+        <Label>{t("protocol.handler")}</Label>
+        <div className="border rounded-lg overflow-hidden">
+          <Editor
+            height="250px"
+            defaultLanguage="javascript"
+            value={editedProtocol.handler}
+            onChange={(value) =>
+              setEditedProtocol((prev) => ({ ...prev, handler: value || "" }))
+            }
+            options={{
+              minimap: { enabled: false },
+              fontSize: 14,
+              lineNumbers: "on",
+              roundedSelection: false,
+              scrollBeyondLastLine: false,
+              readOnly: false,
+              theme: "vs-dark",
+              wordWrap: "on",
+              automaticLayout: true,
+            }}
+          />
+        </div>
+      </div>
+
+      <div className="space-y-4">
+        <div className="space-y-1">
+          <Label>{t("protocol.registration.type")}</Label>
+          <div className="flex gap-4">
+            <Button
+              variant={editedProtocol.registration.type === "active" ? "default" : "outline"}
+              onClick={() =>
+                setEditedProtocol((prev) => ({
+                  ...prev,
+                  registration: {
+                    type: "active",
+                    active: {
+                      command: "",
+                      expectedResponse: "",
+                    },
+                  },
+                }))
+              }
+            >
+              {t("protocol.registration.active")}
+            </Button>
+            <Button
+              variant={editedProtocol.registration.type === "passive" ? "default" : "outline"}
+              onClick={() =>
+                setEditedProtocol((prev) => ({
+                  ...prev,
+                  registration: {
+                    type: "passive",
+                    passive: {
+                      matchType: "content",
+                      matchPattern: "",
+                    },
+                  },
+                }))
+              }
+            >
+              {t("protocol.registration.passive")}
+            </Button>
+          </div>
+        </div>
+
+        {editedProtocol.registration.type === "active" ? (
+          <div className="space-y-4">
+            <div className="space-y-1">
+              <Label>{t("protocol.registration.command")}</Label>
+              <Input
+                value={editedProtocol.registration.active?.command || ""}
+                onChange={(e) =>
+                  setEditedProtocol((prev) => ({
+                    ...prev,
+                    registration: {
+                      ...prev.registration,
+                      active: {
+                        ...prev.registration.active!,
+                        command: e.target.value,
+                      },
+                    },
+                  }))
+                }
+              />
+            </div>
+            <div className="space-y-1">
+              <Label>{t("protocol.registration.expectedResponse")}</Label>
+              <Input
+                value={editedProtocol.registration.active?.expectedResponse || ""}
+                onChange={(e) =>
+                  setEditedProtocol((prev) => ({
+                    ...prev,
+                    registration: {
+                      ...prev.registration,
+                      active: {
+                        ...prev.registration.active!,
+                        expectedResponse: e.target.value,
+                      },
+                    },
+                  }))
+                }
+              />
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            <div className="space-y-1">
+              <Label>{t("protocol.registration.matchType")}</Label>
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  variant={
+                    editedProtocol.registration.passive?.matchType === "content"
+                      ? "default"
+                      : "outline"
+                  }
+                  onClick={() =>
+                    setEditedProtocol((prev) => ({
+                      ...prev,
+                      registration: {
+                        ...prev.registration,
+                        passive: {
+                          ...prev.registration.passive!,
+                          matchType: "content",
+                        },
+                      },
+                    }))
+                  }
+                >
+                  {t("protocol.registration.matchType.content")}
+                </Button>
+                <Button
+                  variant={
+                    editedProtocol.registration.passive?.matchType === "ip"
+                      ? "default"
+                      : "outline"
+                  }
+                  onClick={() =>
+                    setEditedProtocol((prev) => ({
+                      ...prev,
+                      registration: {
+                        ...prev.registration,
+                        passive: {
+                          ...prev.registration.passive!,
+                          matchType: "ip",
+                        },
+                      },
+                    }))
+                  }
+                >
+                  {t("protocol.registration.matchType.ip")}
+                </Button>
+                <Button
+                  variant={
+                    editedProtocol.registration.passive?.matchType === "ipRange"
+                      ? "default"
+                      : "outline"
+                  }
+                  onClick={() =>
+                    setEditedProtocol((prev) => ({
+                      ...prev,
+                      registration: {
+                        ...prev.registration,
+                        passive: {
+                          ...prev.registration.passive!,
+                          matchType: "ipRange",
+                        },
+                      },
+                    }))
+                  }
+                >
+                  {t("protocol.registration.matchType.ipRange")}
+                </Button>
+              </div>
+            </div>
+            <div className="space-y-1">
+              <Label>{t("protocol.registration.matchPattern")}</Label>
+              <Input
+                placeholder={
+                  editedProtocol.registration.passive?.matchType === "content"
+                    ? t("protocol.registration.contentPatternPlaceholder")
+                    : editedProtocol.registration.passive?.matchType === "ip"
+                      ? t("protocol.registration.ipPatternPlaceholder")
+                      : t("protocol.registration.ipRangePatternPlaceholder")
+                }
+                value={editedProtocol.registration.passive?.matchPattern || ""}
+                onChange={(e) =>
+                  setEditedProtocol((prev) => ({
+                    ...prev,
+                    registration: {
+                      ...prev.registration,
+                      passive: {
+                        ...prev.registration.passive!,
+                        matchPattern: e.target.value,
+                      },
+                    },
+                  }))
+                }
+              />
+            </div>
+          </div>
+        )}
+      </div>
+
+      <div className="flex justify-end gap-2">
+        <Button variant="outline" onClick={onClose}>
+          {t("app.cancel")}
+        </Button>
+        <Button onClick={handleSave}>
+          {t("app.save")}
+        </Button>
+      </div>
+    </div>
+  );
+}
+
 export function ProtocolManager({
   protocols,
   isOpen,
@@ -52,13 +312,10 @@ export function ProtocolManager({
   onUpdateProtocol,
 }: ProtocolManagerProps) {
   const { t } = useTranslation();
-  const [selectedProtocol, setSelectedProtocol] = useState<Protocol | null>(
-    null
-  );
   const [newProtocol, setNewProtocol] = useState<Omit<Protocol, "id">>({
     name: "",
     description: "",
-    handler: t("protocol.example"),
+    handler: `function message(data) {\n  // Process the data here\n  return data;\n}`,
     registration: {
       type: "active",
       active: {
@@ -67,6 +324,23 @@ export function ProtocolManager({
       },
     },
   });
+  const [editingProtocol, setEditingProtocol] = useState<Protocol | null>(null);
+  const [layout, setLayout] = useState<'horizontal' | 'vertical'>('horizontal');
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        const width = entry.contentRect.width;
+        setLayout(width < 768 ? 'vertical' : 'horizontal');
+      }
+    });
+
+    observer.observe(containerRef.current);
+    return () => observer.disconnect();
+  }, []);
 
   const handleAddProtocol = () => {
     if (newProtocol.name.trim()) {
@@ -77,7 +351,7 @@ export function ProtocolManager({
       setNewProtocol({
         name: "",
         description: "",
-        handler: t("protocol.example"),
+        handler: `function message(data) {\n  // Process the data here\n  return data;\n}`,
         registration: {
           type: "active",
           active: {
@@ -86,12 +360,6 @@ export function ProtocolManager({
           },
         },
       });
-    }
-  };
-
-  const handleSaveProtocol = () => {
-    if (selectedProtocol) {
-      onUpdateProtocol(selectedProtocol);
     }
   };
 
@@ -120,7 +388,9 @@ export function ProtocolManager({
               id: crypto.randomUUID(),
               name: importedProtocol.name,
               description: importedProtocol.description || "",
-              handler: importedProtocol.handler,
+              handler: importedProtocol.handler.includes('function')
+                ? importedProtocol.handler
+                : `function message(data) {\n  ${importedProtocol.handler}\n}`,
               registration: {
                 type: "active",
                 active: {
@@ -145,33 +415,12 @@ export function ProtocolManager({
           <FileCode className="w-4 h-4" />
         </Button>
       </DrawerTrigger>
-      <DrawerContent className="h-[90vh]">
-        <DrawerHeader>
-          <DrawerTitle>{t("protocol.manager")}</DrawerTitle>
-        </DrawerHeader>
-        <div className="flex p-2 pb-4">
-          {/* left */}
-          <div className="w-[270px] p-4 flex flex-col">
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="protocol-name">{t("protocol.new")}</Label>
-                <div className="flex gap-2">
-                  <Input
-                    id="protocol-name"
-                    value={newProtocol.name}
-                    onChange={(e) =>
-                      setNewProtocol((prev) => ({
-                        ...prev,
-                        name: e.target.value,
-                      }))
-                    }
-                    placeholder={t("protocol.name")}
-                    className="flex-1"
-                  />
-                  <Button onClick={handleAddProtocol}>{t("app.add")}</Button>
-                </div>
-              </div>
-              <div className="flex gap-2">
+      <DrawerContent>
+        <div className="flex flex-col h-full">
+          <DrawerHeader className="flex-none">
+            <div className="flex items-center justify-between">
+              <DrawerTitle>{t("protocol.title")}</DrawerTitle>
+              <div className="flex items-center gap-2">
                 <Button variant="outline" size="icon" asChild>
                   <label>
                     <input
@@ -180,386 +429,370 @@ export function ProtocolManager({
                       className="hidden"
                       onChange={handleImportProtocol}
                     />
-                    <Upload className="w-4 h-4" />
+                    <FileUp className="w-4 h-4" />
                   </label>
                 </Button>
               </div>
             </div>
-            <ScrollArea className="flex-1 mt-4">
-              <div className="space-y-2">
-                {protocols.map((protocol) => (
-                  <div
-                    key={protocol.id}
-                    className={`p-3 border rounded-lg space-y-2 cursor-pointer transition-colors ${
-                      selectedProtocol?.id === protocol.id
-                        ? "bg-accent"
-                        : "hover:bg-accent/50"
-                    }`}
-                    onClick={() => setSelectedProtocol(protocol)}
-                  >
-                    <div className="flex justify-between items-center">
-                      <div>
-                        <h4 className="font-medium">{protocol.name}</h4>
-                        <p className="text-sm text-muted-foreground">
-                          {protocol.description}
-                        </p>
+          </DrawerHeader>
+          <div ref={containerRef} className="flex-1 overflow-hidden p-4">
+            <div className={`flex ${layout === 'vertical' ? 'flex-col' : 'flex-row'} gap-6 h-full`}>
+              {/* Left Sidebar - Protocol List */}
+              <div className={`${layout === 'vertical' ? 'w-full' : 'w-80'} flex flex-col border rounded-lg overflow-hidden`}>
+                <div className="p-4 border-b flex-none">
+                  <div className="flex items-center gap-2">
+                    <Input
+                      placeholder={t("protocol.new")}
+                      value={newProtocol.name}
+                      onChange={(e) =>
+                        setNewProtocol((prev) => ({ ...prev, name: e.target.value }))
+                      }
+                      className="flex-1"
+                    />
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleAddProtocol}
+                      disabled={!newProtocol.name.trim()}
+                    >
+                      {t("app.add")}
+                    </Button>
+                  </div>
+                </div>
+                <ScrollArea className="flex-1">
+                  <div className="p-2 space-y-1">
+                    {protocols.map((protocol) => (
+                      <div
+                        key={protocol.id}
+                        className={`group flex items-center justify-between p-2 rounded-md cursor-pointer transition-colors ${editingProtocol?.id === protocol.id
+                          ? "bg-primary/10 text-primary"
+                          : "hover:bg-accent/50"
+                          }`}
+                        onClick={() => setEditingProtocol(protocol)}
+                      >
+                        <div className="flex-1 min-w-0">
+                          <div className="font-medium truncate">{protocol.name}</div>
+                          {protocol.description && (
+                            <div className="text-sm text-muted-foreground truncate">
+                              {protocol.description}
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleExportProtocol(protocol);
+                            }}
+                          >
+                            <Download className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7 text-destructive hover:text-destructive/90 hover:bg-destructive/10"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onRemoveProtocol(protocol.id);
+                            }}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
                       </div>
-                      <div className="flex gap-1">
+                    ))}
+                    {protocols.length === 0 && (
+                      <div className="text-center text-muted-foreground py-4">
+                        {t("protocol.select")}
+                      </div>
+                    )}
+                  </div>
+                </ScrollArea>
+              </div>
+
+              {/* Right Panel - Protocol Editor */}
+              <div className={`${layout === 'vertical' ? 'w-full' : 'flex-1'} flex flex-col border rounded-lg overflow-hidden`}>
+                {editingProtocol ? (
+                  <ScrollArea className="flex-1">
+                    <div className="p-6 space-y-6">
+                      <div className="flex items-center justify-between">
+                        <h3 className="text-lg font-medium">{editingProtocol.name}</h3>
                         <Button
-                          variant="ghost"
+                          variant="outline"
                           size="icon"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleExportProtocol(protocol);
-                          }}
+                          onClick={() => handleExportProtocol(editingProtocol)}
                         >
                           <Download className="w-4 h-4" />
                         </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onRemoveProtocol(protocol.id);
-                            if (selectedProtocol?.id === protocol.id) {
-                              setSelectedProtocol(null);
+                      </div>
+
+                      <div className="space-y-1">
+                        <Label>{t("protocol.description")}</Label>
+                        <Input
+                          value={editingProtocol.description}
+                          onChange={(e) =>
+                            setEditingProtocol((prev) =>
+                              prev ? { ...prev, description: e.target.value } : null
+                            )
+                          }
+                        />
+                      </div>
+
+                      <div className="space-y-1">
+                        <Label>{t("protocol.handler")}</Label>
+                        <div className="border rounded-lg overflow-hidden">
+                          <Editor
+                            height="250px"
+                            defaultLanguage="javascript"
+                            value={editingProtocol.handler}
+                            onChange={(value) =>
+                              setEditingProtocol((prev) =>
+                                prev ? { ...prev, handler: value || "" } : null
+                              )
                             }
-                          }}
-                        >
-                          <Trash2 className="w-4 h-4" />
+                            options={{
+                              minimap: { enabled: false },
+                              fontSize: 14,
+                              lineNumbers: "on",
+                              roundedSelection: false,
+                              scrollBeyondLastLine: false,
+                              readOnly: false,
+                              theme: "vs-dark",
+                              wordWrap: "on",
+                              automaticLayout: true,
+                            }}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-4">
+                        <div className="space-y-1">
+                          <Label>{t("protocol.registration.type")}</Label>
+                          <div className="flex gap-4">
+                            <Button
+                              variant={editingProtocol.registration.type === "active" ? "default" : "outline"}
+                              onClick={() =>
+                                setEditingProtocol((prev) =>
+                                  prev
+                                    ? {
+                                      ...prev,
+                                      registration: {
+                                        type: "active",
+                                        active: {
+                                          command: "",
+                                          expectedResponse: "",
+                                        },
+                                      },
+                                    }
+                                    : null
+                                )
+                              }
+                            >
+                              {t("protocol.registration.active")}
+                            </Button>
+                            <Button
+                              variant={editingProtocol.registration.type === "passive" ? "default" : "outline"}
+                              onClick={() =>
+                                setEditingProtocol((prev) =>
+                                  prev
+                                    ? {
+                                      ...prev,
+                                      registration: {
+                                        type: "passive",
+                                        passive: {
+                                          matchType: "content",
+                                          matchPattern: "",
+                                        },
+                                      },
+                                    }
+                                    : null
+                                )
+                              }
+                            >
+                              {t("protocol.registration.passive")}
+                            </Button>
+                          </div>
+                        </div>
+
+                        {editingProtocol.registration.type === "active" ? (
+                          <div className="space-y-4">
+                            <div className="space-y-1">
+                              <Label>{t("protocol.registration.command")}</Label>
+                              <Input
+                                value={editingProtocol.registration.active?.command || ""}
+                                onChange={(e) =>
+                                  setEditingProtocol((prev) =>
+                                    prev
+                                      ? {
+                                        ...prev,
+                                        registration: {
+                                          ...prev.registration,
+                                          active: {
+                                            ...prev.registration.active!,
+                                            command: e.target.value,
+                                          },
+                                        },
+                                      }
+                                      : null
+                                  )
+                                }
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <Label>{t("protocol.registration.expectedResponse")}</Label>
+                              <Input
+                                value={editingProtocol.registration.active?.expectedResponse || ""}
+                                onChange={(e) =>
+                                  setEditingProtocol((prev) =>
+                                    prev
+                                      ? {
+                                        ...prev,
+                                        registration: {
+                                          ...prev.registration,
+                                          active: {
+                                            ...prev.registration.active!,
+                                            expectedResponse: e.target.value,
+                                          },
+                                        },
+                                      }
+                                      : null
+                                  )
+                                }
+                              />
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="space-y-4">
+                            <div className="space-y-1">
+                              <Label>{t("protocol.registration.matchType")}</Label>
+                              <div className="flex flex-wrap gap-2">
+                                <Button
+                                  variant={
+                                    editingProtocol.registration.passive?.matchType === "content"
+                                      ? "default"
+                                      : "outline"
+                                  }
+                                  onClick={() =>
+                                    setEditingProtocol((prev) =>
+                                      prev
+                                        ? {
+                                          ...prev,
+                                          registration: {
+                                            ...prev.registration,
+                                            passive: {
+                                              ...prev.registration.passive!,
+                                              matchType: "content",
+                                            },
+                                          },
+                                        }
+                                        : null
+                                    )
+                                  }
+                                >
+                                  {t("protocol.registration.matchType.content")}
+                                </Button>
+                                <Button
+                                  variant={
+                                    editingProtocol.registration.passive?.matchType === "ip"
+                                      ? "default"
+                                      : "outline"
+                                  }
+                                  onClick={() =>
+                                    setEditingProtocol((prev) =>
+                                      prev
+                                        ? {
+                                          ...prev,
+                                          registration: {
+                                            ...prev.registration,
+                                            passive: {
+                                              ...prev.registration.passive!,
+                                              matchType: "ip",
+                                            },
+                                          },
+                                        }
+                                        : null
+                                    )
+                                  }
+                                >
+                                  {t("protocol.registration.matchType.ip")}
+                                </Button>
+                                <Button
+                                  variant={
+                                    editingProtocol.registration.passive?.matchType === "ipRange"
+                                      ? "default"
+                                      : "outline"
+                                  }
+                                  onClick={() =>
+                                    setEditingProtocol((prev) =>
+                                      prev
+                                        ? {
+                                          ...prev,
+                                          registration: {
+                                            ...prev.registration,
+                                            passive: {
+                                              ...prev.registration.passive!,
+                                              matchType: "ipRange",
+                                            },
+                                          },
+                                        }
+                                        : null
+                                    )
+                                  }
+                                >
+                                  {t("protocol.registration.matchType.ipRange")}
+                                </Button>
+                              </div>
+                            </div>
+                            <div className="space-y-1">
+                              <Label>{t("protocol.registration.matchPattern")}</Label>
+                              <Input
+                                placeholder={
+                                  editingProtocol.registration.passive?.matchType === "content"
+                                    ? t("protocol.registration.contentPatternPlaceholder")
+                                    : editingProtocol.registration.passive?.matchType === "ip"
+                                      ? t("protocol.registration.ipPatternPlaceholder")
+                                      : t("protocol.registration.ipRangePatternPlaceholder")
+                                }
+                                value={editingProtocol.registration.passive?.matchPattern || ""}
+                                onChange={(e) =>
+                                  setEditingProtocol((prev) =>
+                                    prev
+                                      ? {
+                                        ...prev,
+                                        registration: {
+                                          ...prev.registration,
+                                          passive: {
+                                            ...prev.registration.passive!,
+                                            matchPattern: e.target.value,
+                                          },
+                                        },
+                                      }
+                                      : null
+                                  )
+                                }
+                              />
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="flex justify-end">
+                        <Button onClick={() => onUpdateProtocol(editingProtocol)}>
+                          {t("app.save")}
                         </Button>
                       </div>
                     </div>
+                  </ScrollArea>
+                ) : (
+                  <div className="flex flex-col items-center justify-center h-full text-muted-foreground p-8">
+                    <p>{t("protocol.select")}</p>
                   </div>
-                ))}
+                )}
               </div>
-            </ScrollArea>
-          </div>
-
-          {/* right */}
-          <div className="flex-1 p-4 flex flex-col h-full border rounded shadow-gray-400 shadow-xl mr-2">
-            {selectedProtocol ? (
-              <>
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="edit-name">{t("protocol.name")}</Label>
-                    <div className="flex gap-2">
-                      <Input
-                        id="edit-name"
-                        value={selectedProtocol.name}
-                        onChange={(e) =>
-                          setSelectedProtocol((prev) =>
-                            prev ? { ...prev, name: e.target.value } : null
-                          )
-                        }
-                        className="flex-1"
-                      />
-                      <Button onClick={handleSaveProtocol}>
-                        {t("app.save")}
-                      </Button>
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="edit-description">
-                      {t("protocol.description")}
-                    </Label>
-                    <Input
-                      id="edit-description"
-                      value={selectedProtocol.description}
-                      onChange={(e) =>
-                        setSelectedProtocol((prev) =>
-                          prev ? { ...prev, description: e.target.value } : null
-                        )
-                      }
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>{t("protocol.registration.type")}</Label>
-                    <div className="flex gap-4">
-                      <div className="flex items-center space-x-2">
-                        <input
-                          type="radio"
-                          id="active"
-                          checked={
-                            selectedProtocol.registration.type === "active"
-                          }
-                          onChange={() =>
-                            setSelectedProtocol((prev) =>
-                              prev
-                                ? {
-                                    ...prev,
-                                    registration: {
-                                      type: "active",
-                                      active: {
-                                        command: "",
-                                        expectedResponse: "",
-                                      },
-                                    },
-                                  }
-                                : null
-                            )
-                          }
-                        />
-                        <Label htmlFor="active">
-                          {t("protocol.registration.active")}
-                        </Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <input
-                          type="radio"
-                          id="passive"
-                          checked={
-                            selectedProtocol.registration.type === "passive"
-                          }
-                          onChange={() =>
-                            setSelectedProtocol((prev) =>
-                              prev
-                                ? {
-                                    ...prev,
-                                    registration: {
-                                      type: "passive",
-                                      passive: {
-                                        matchType: "content",
-                                        matchPattern: "",
-                                      },
-                                    },
-                                  }
-                                : null
-                            )
-                          }
-                        />
-                        <Label htmlFor="passive">
-                          {t("protocol.registration.passive")}
-                        </Label>
-                      </div>
-                    </div>
-                  </div>
-
-                  {selectedProtocol.registration.type === "active" ? (
-                    <>
-                      <div className="space-y-2">
-                        <Label htmlFor="edit-command">
-                          {t("protocol.registration.command")}
-                        </Label>
-                        <Input
-                          id="edit-command"
-                          value={
-                            selectedProtocol.registration.active?.command || ""
-                          }
-                          onChange={(e) =>
-                            setSelectedProtocol((prev) =>
-                              prev
-                                ? {
-                                    ...prev,
-                                    registration: {
-                                      ...prev.registration,
-                                      active: {
-                                        ...prev.registration.active!,
-                                        command: e.target.value,
-                                      },
-                                    },
-                                  }
-                                : null
-                            )
-                          }
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="edit-expected-response">
-                          {t("protocol.registration.expectedResponse")}
-                        </Label>
-                        <Input
-                          id="edit-expected-response"
-                          value={
-                            selectedProtocol.registration.active
-                              ?.expectedResponse || ""
-                          }
-                          onChange={(e) =>
-                            setSelectedProtocol((prev) =>
-                              prev
-                                ? {
-                                    ...prev,
-                                    registration: {
-                                      ...prev.registration,
-                                      active: {
-                                        ...prev.registration.active!,
-                                        expectedResponse: e.target.value,
-                                      },
-                                    },
-                                  }
-                                : null
-                            )
-                          }
-                        />
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      <div className="space-y-2">
-                        <Label>{t("protocol.registration.matchType")}</Label>
-                        <div className="flex gap-4">
-                          <div className="flex items-center space-x-2">
-                            <input
-                              type="radio"
-                              id="content"
-                              checked={
-                                selectedProtocol.registration.passive
-                                  ?.matchType === "content"
-                              }
-                              onChange={() =>
-                                setSelectedProtocol((prev) =>
-                                  prev
-                                    ? {
-                                        ...prev,
-                                        registration: {
-                                          ...prev.registration,
-                                          passive: {
-                                            ...prev.registration.passive!,
-                                            matchType: "content",
-                                          },
-                                        },
-                                      }
-                                    : null
-                                )
-                              }
-                            />
-                            <Label htmlFor="content">
-                              {t("protocol.registration.content")}
-                            </Label>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <input
-                              type="radio"
-                              id="ip"
-                              checked={
-                                selectedProtocol.registration.passive
-                                  ?.matchType === "ip"
-                              }
-                              onChange={() =>
-                                setSelectedProtocol((prev) =>
-                                  prev
-                                    ? {
-                                        ...prev,
-                                        registration: {
-                                          ...prev.registration,
-                                          passive: {
-                                            ...prev.registration.passive!,
-                                            matchType: "ip",
-                                          },
-                                        },
-                                      }
-                                    : null
-                                )
-                              }
-                            />
-                            <Label htmlFor="ip">
-                              {t("protocol.registration.ip")}
-                            </Label>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <input
-                              type="radio"
-                              id="ipRange"
-                              checked={
-                                selectedProtocol.registration.passive
-                                  ?.matchType === "ipRange"
-                              }
-                              onChange={() =>
-                                setSelectedProtocol((prev) =>
-                                  prev
-                                    ? {
-                                        ...prev,
-                                        registration: {
-                                          ...prev.registration,
-                                          passive: {
-                                            ...prev.registration.passive!,
-                                            matchType: "ipRange",
-                                          },
-                                        },
-                                      }
-                                    : null
-                                )
-                              }
-                            />
-                            <Label htmlFor="ipRange">
-                              {t("protocol.registration.ipRange")}
-                            </Label>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="edit-match-pattern">
-                          {t("protocol.registration.matchPattern")}
-                        </Label>
-                        <Input
-                          id="edit-match-pattern"
-                          value={
-                            selectedProtocol.registration.passive
-                              ?.matchPattern || ""
-                          }
-                          onChange={(e) =>
-                            setSelectedProtocol((prev) =>
-                              prev
-                                ? {
-                                    ...prev,
-                                    registration: {
-                                      ...prev.registration,
-                                      passive: {
-                                        ...prev.registration.passive!,
-                                        matchPattern: e.target.value,
-                                      },
-                                    },
-                                  }
-                                : null
-                            )
-                          }
-                          placeholder={
-                            selectedProtocol.registration.passive?.matchType ===
-                            "content"
-                              ? t(
-                                  "protocol.registration.contentPatternPlaceholder"
-                                )
-                              : selectedProtocol.registration.passive
-                                  ?.matchType === "ip"
-                              ? t("protocol.registration.ipPatternPlaceholder")
-                              : t(
-                                  "protocol.registration.ipRangePatternPlaceholder"
-                                )
-                          }
-                        />
-                      </div>
-                    </>
-                  )}
-                </div>
-                <div className="flex-1 mt-4 flex flex-col">
-                  <Label>{t("protocol.handler")}</Label>
-                  <div className="flex-1 min-h-0">
-                    <Editor
-                      height="350px"
-                      defaultLanguage="javascript"
-                      value={selectedProtocol.handler}
-                      onChange={(value) =>
-                        setSelectedProtocol((prev) =>
-                          prev ? { ...prev, handler: value || "" } : null
-                        )
-                      }
-                      options={{
-                        minimap: { enabled: false },
-                        fontSize: 14,
-                        lineNumbers: "on",
-                        roundedSelection: false,
-                        scrollBeyondLastLine: false,
-                        automaticLayout: true,
-                      }}
-                    />
-                  </div>
-                </div>
-              </>
-            ) : (
-              <div className="h-full flex items-center justify-center text-muted-foreground">
-                {t("protocol.select")}
-              </div>
-            )}
+            </div>
           </div>
         </div>
       </DrawerContent>
